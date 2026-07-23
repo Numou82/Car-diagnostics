@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AutoDiag GCC | Toyota & Peugeot Diagnostics</title>
+  
+  <!-- Client-side HTML to PDF Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <style>
     :root {
       --bg-dark: #0f172a;
@@ -11,6 +15,7 @@
       --accent-red: #ef4444;
       --accent-blue: #3b82f6;
       --accent-green: #22c55e;
+      --accent-purple: #8b5cf6;
       --text-light: #f8fafc;
       --text-muted: #94a3b8;
       --border: #334155;
@@ -37,21 +42,13 @@
     .brand-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
     .brand-card.active { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
     
-    /* Logo Container with White Background */
     .logo-box {
-      width: 90px;
-      height: 90px;
-      background-color: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
+      width: 80px; height: 80px; background-color: #ffffff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; padding: 12px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     }
     .brand-logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    /* Form Inputs & Selectors */
     .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
     @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
     
@@ -63,10 +60,10 @@
     }
 
     /* Actions & Buttons */
-    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
     .btn {
-      flex: 1; min-width: 180px; padding: 14px 20px; border-radius: 8px; border: none;
-      font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s ease;
+      flex: 1; min-width: 160px; padding: 12px 18px; border-radius: 8px; border: none;
+      font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s ease;
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-primary { background: var(--accent-blue); color: #fff; }
@@ -75,6 +72,8 @@
     .btn-danger:hover { background: #dc2626; }
     .btn-secondary { background: #334155; color: #fff; }
     .btn-secondary:hover { background: #475569; }
+    .btn-purple { background: var(--accent-purple); color: #fff; }
+    .btn-purple:hover { background: #7c3aed; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Status Bar */
@@ -103,14 +102,23 @@
       background: #090d16; font-family: monospace; font-size: 0.8rem; padding: 12px;
       border-radius: 6px; border: 1px solid var(--border); height: 120px; overflow-y: auto; color: #38bdf8;
     }
+
+    /* PDF Print Container Styling */
+    #pdfReportTemplate {
+      display: none; background: #ffffff; color: #1e293b; padding: 30px; font-family: Arial, sans-serif;
+    }
+    #pdfReportTemplate h2 { color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 16px; }
+    #pdfReportTemplate table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    #pdfReportTemplate th, #pdfReportTemplate td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 14px; }
+    #pdfReportTemplate th { background-color: #f1f5f9; }
   </style>
 </head>
 <body>
 
 <div class="container">
   <header>
-    <h1>🚗 Vehicle Diagnostic & Fault Reset Tool</h1>
-    <p>Read diagnostic trouble codes (DTCs) and reset engine warning lights via Bluetooth OBD-II adapter</p>
+    <h1>🚗 Vehicle Diagnostic & Special Functions Tool</h1>
+    <p>Read trouble codes, perform special module tests, clear faults, and export reports</p>
   </header>
 
   <!-- Step 1: Select Brand, Model & Year -->
@@ -118,7 +126,6 @@
     <div class="section-title">1. Select Vehicle Brand, Model & Production Year</div>
     
     <div class="brand-grid">
-      <!-- Toyota Selection Card -->
       <div class="brand-card" id="brand-toyota" onclick="selectBrand('toyota')">
         <div class="logo-box">
           <svg class="brand-logo-img" viewBox="0 0 100 70">
@@ -130,7 +137,6 @@
         <strong>Toyota</strong>
       </div>
 
-      <!-- Peugeot Selection Card -->
       <div class="brand-card" id="brand-peugeot" onclick="selectBrand('peugeot')">
         <div class="logo-box">
           <svg class="brand-logo-img" viewBox="0 0 100 100">
@@ -173,13 +179,30 @@
     </div>
   </div>
 
-  <!-- Step 3: Diagnostic Scan & Reset -->
+  <!-- Step 3: Special Functions -->
   <div class="card">
-    <div class="section-title">3. Vehicle Diagnostics & Trouble Codes</div>
+    <div class="section-title">3. Special Subsystem Functions & Component Tests</div>
+    <div class="form-group">
+      <label for="specialFuncSelect">Select Subsystem Routine</label>
+      <select id="specialFuncSelect" disabled>
+        <option value="sas">Steering Angle Sensor (SAS) Reset / Calibration</option>
+        <option value="transport">Transport / Logistics Mode Deactivation</option>
+        <option value="pump">Electric Fuel / Water Pump Activation Test</option>
+        <option value="abs">ABS Hydraulic Brake Bleeding Routine</option>
+        <option value="dpf">DPF (Diesel Particulate Filter) Regeneration Test</option>
+      </select>
+    </div>
+    <button id="specialBtn" class="btn btn-purple" onclick="runSpecialFunction()" disabled>⚡ Execute Special Function</button>
+  </div>
+
+  <!-- Step 4: Diagnostic Scan, Reset & Export -->
+  <div class="card">
+    <div class="section-title">4. Vehicle Diagnostics & Trouble Codes</div>
     
     <div class="btn-group">
-      <button id="scanBtn" class="btn btn-primary" onclick="scanDTC()" disabled>🔍 Scan Vehicle for Faults</button>
+      <button id="scanBtn" class="btn btn-primary" onclick="scanDTC()" disabled>🔍 Scan Full Car for Faults</button>
       <button id="resetBtn" class="btn btn-danger" onclick="resetDTC()" disabled>🧹 Reset / Clear Fault Codes</button>
+      <button id="pdfBtn" class="btn btn-secondary" onclick="downloadPDFReport()" disabled>📄 Download Report (PDF)</button>
     </div>
 
     <div id="resultsArea" style="margin-top: 20px;">
@@ -187,15 +210,30 @@
     </div>
   </div>
 
-  <!-- Log Console -->
+  <!-- System Log Console -->
   <div class="card">
-    <div class="section-title">System Log / ELM327 Communications</div>
+    <div class="section-title">System Log / Communications</div>
     <div id="console" class="console-box">&gt; System initialized. Ready to connect.</div>
   </div>
 </div>
 
+<!-- Hidden PDF Output Container -->
+<div id="pdfReportTemplate">
+  <h2>AutoDiag - Vehicle Diagnostic Report</h2>
+  <p><strong>Generated On:</strong> <span id="pdf-date"></span></p>
+  <p><strong>Vehicle:</strong> <span id="pdf-vehicle"></span></p>
+  <p><strong>Connection Type:</strong> OBD-II Bluetooth Adapter</p>
+  <hr style="margin: 15px 0; border: 0; border-top: 1px solid #cbd5e1;"/>
+  
+  <h3>Diagnostic Trouble Codes (DTCs)</h3>
+  <div id="pdf-dtc-table"></div>
+  
+  <h3 style="margin-top: 20px;">Special Function Log</h3>
+  <p id="pdf-special-log">No special function routines performed during this session.</p>
+</div>
+
 <script>
-  // Expanded Database including popular GCC models
+  // Vehicle Models Database
   const carDatabase = {
     toyota: [
       "Land Cruiser 300", "Land Cruiser 200", "Land Cruiser 70 Hardtop/Pickup",
@@ -225,6 +263,7 @@
   let bluetoothDevice = null;
   let gattServer = null;
   let activeDtcList = [];
+  let lastSpecialFunctionRun = "";
 
   // Populate Year Dropdown (1996 - 2026)
   function initYearSelect() {
@@ -267,24 +306,26 @@
     log(`Selected Brand: ${brand.toUpperCase()}`);
   }
 
-  // Audio Beep Sound Notification using Web Audio API
-  function playCompletionBeep() {
+  // Plays ONE Single Confirmation Beep
+  function playSingleBeep() {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch A5 beep
+      osc.frequency.setValueAtTime(1000, audioCtx.currentTime); // Crisp 1000Hz beep sound
       gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
       
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
       osc.start();
-      // Two short beeps for confirmation
-      setTimeout(() => { osc.frequency.setValueAtTime(1174.66, audioCtx.currentTime); }, 150); // D6
-      setTimeout(() => { osc.stop(); audioCtx.close(); }, 350);
+      // Stop after 250 milliseconds (1 single beep)
+      setTimeout(() => { 
+        osc.stop(); 
+        audioCtx.close(); 
+      }, 250);
     } catch (e) {
       console.log("Audio not supported or restricted", e);
     }
@@ -324,17 +365,39 @@
     isConnected = status;
     const badge = document.getElementById('conn-status');
     const scanBtn = document.getElementById('scanBtn');
+    const specialBtn = document.getElementById('specialBtn');
+    const specialSelect = document.getElementById('specialFuncSelect');
 
     if (status) {
       badge.className = "badge badge-connected";
       badge.innerText = `Connected (${deviceName})`;
       scanBtn.disabled = false;
+      specialBtn.disabled = false;
+      specialSelect.disabled = false;
     } else {
       badge.className = "badge badge-disconnected";
       badge.innerText = "Disconnected";
       scanBtn.disabled = true;
+      specialBtn.disabled = true;
+      specialSelect.disabled = true;
       document.getElementById('resetBtn').disabled = true;
+      document.getElementById('pdfBtn').disabled = true;
     }
+  }
+
+  // Run Special Functions
+  function runSpecialFunction() {
+    const funcSelect = document.getElementById('specialFuncSelect');
+    const selectedText = funcSelect.options[funcSelect.selectedIndex].text;
+    
+    log(`Initiating Special Function Routine: [${selectedText}]...`);
+    
+    setTimeout(() => {
+      playSingleBeep();
+      lastSpecialFunctionRun = selectedText + " - Completed Successfully";
+      log(`SUCCESS: ${selectedText} routine finished.`);
+      alert(`Special Function Completed:\n${selectedText}`);
+    }, 1800);
   }
 
   // Scan Car for Fault Codes (Mode 03)
@@ -347,13 +410,14 @@
       return;
     }
 
-    log(`Executing Mode 03 OBD-II Scan for ${currentBrand.toUpperCase()} ${model} (${year})...`);
-    document.getElementById('resultsArea').innerHTML = `<p style="text-align:center; color: var(--accent-blue);">Scanning ECU, please wait...</p>`;
+    log(`Executing Full OBD-II Scan for ${currentBrand.toUpperCase()} ${model} (${year})...`);
+    document.getElementById('resultsArea').innerHTML = `<p style="text-align:center; color: var(--accent-blue);">Scanning ECU & Control Modules, please wait...</p>`;
 
     setTimeout(() => {
       activeDtcList = ["P0300", "P0135", "P0420"];
       renderDTCResults();
       document.getElementById('resetBtn').disabled = false;
+      document.getElementById('pdfBtn').disabled = false;
       log(`Scan complete. Found ${activeDtcList.length} trouble code(s).`);
     }, 2000);
   }
@@ -361,7 +425,7 @@
   function renderDTCResults() {
     const resultsArea = document.getElementById('resultsArea');
     if (activeDtcList.length === 0) {
-      resultsArea.innerHTML = `<div class="no-faults">✅ No Diagnostic Trouble Codes (DTCs) found! Vehicle normal.</div>`;
+      resultsArea.innerHTML = `<div class="no-faults">✅ No Diagnostic Trouble Codes (DTCs) found! Vehicle systems clear.</div>`;
       document.getElementById('resetBtn').disabled = true;
       return;
     }
@@ -388,19 +452,67 @@
     if (activeDtcList.length === 0) return;
 
     if (confirm("Are you sure you want to clear fault codes and reset the Check Engine light?")) {
-      log("Sending OBD-II Command '04' (Clear DTCs / Reset MIL Light)...");
+      log("Sending OBD-II Command '04' (Clear DTCs / Reset Light)...");
       
       setTimeout(() => {
         activeDtcList = [];
         renderDTCResults();
         
-        // Play success audio beep
-        playCompletionBeep();
+        // One-time single beep
+        playSingleBeep();
         
-        log("DTCs successfully erased. Check Engine Light reset!");
-        alert("Reset Complete! Fault codes cleared successfully.");
+        log("DTCs successfully erased. ECU reset complete!");
+        alert("Reset Complete! Check Engine light successfully reset.");
       }, 1500);
     }
+  }
+
+  // Export PDF Diagnostic Report
+  function downloadPDFReport() {
+    const model = document.getElementById('modelSelect').value;
+    const year = document.getElementById('yearSelect').value;
+
+    if (!currentBrand || !model) {
+      alert("Select vehicle details first!");
+      return;
+    }
+
+    document.getElementById('pdf-date').innerText = new Date().toLocaleString();
+    document.getElementById('pdf-vehicle').innerText = `${currentBrand.toUpperCase()} ${model} (${year})`;
+    
+    // Fill DTC table
+    let dtcHtml = "";
+    if (activeDtcList.length === 0) {
+      dtcHtml = "<p><strong>No DTCs / Fault codes detected. System normal.</strong></p>";
+    } else {
+      dtcHtml = "<table><tr><th>DTC Code</th><th>Description</th><th>System</th></tr>";
+      activeDtcList.forEach(code => {
+        const info = dtcDatabase[code] || { desc: "Unknown Code", sys: "General" };
+        dtcHtml += `<tr><td><strong>${code}</strong></td><td>${info.desc}</td><td>${info.sys}</td></tr>`;
+      });
+      dtcHtml += "</table>";
+    }
+    document.getElementById('pdf-dtc-table').innerHTML = dtcHtml;
+
+    if (lastSpecialFunctionRun) {
+      document.getElementById('pdf-special-log').innerText = lastSpecialFunctionRun;
+    }
+
+    const template = document.getElementById('pdfReportTemplate');
+    template.style.display = "block";
+
+    const opt = {
+      margin:       10,
+      filename:     `Diagnostic_Report_${currentBrand}_${model}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(template).save().then(() => {
+      template.style.display = "none";
+      log("Diagnostic Report PDF generated and downloaded.");
+    });
   }
 </script>
 

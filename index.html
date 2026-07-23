@@ -10,8 +10,8 @@
 
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --card-bg: #1e293b;
+      --bg-dark: #0f172a; /* Default theme */
+      --card-bg: rgba(30, 41, 59, 0.85);
       --accent-red: #ef4444;
       --accent-blue: #3b82f6;
       --accent-green: #22c55e;
@@ -22,25 +22,54 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-dark); color: var(--text-light); padding: 20px; min-height: 100vh; }
+    
+    body { 
+      background-color: var(--bg-dark); 
+      color: var(--text-light); 
+      padding: 20px; 
+      min-height: 100vh;
+      transition: background-color 0.4s ease;
+    }
     .container { max-width: 900px; margin: 0 auto; }
     
-    header { text-align: center; margin-bottom: 30px; }
+    header { text-align: center; margin-bottom: 24px; }
     header h1 { font-size: 2rem; color: var(--text-light); margin-bottom: 8px; }
     header p { color: var(--text-muted); font-size: 0.95rem; }
 
-    .card { background: var(--card-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 24px; }
+    /* Theme Changer Styling */
+    .theme-picker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 10px 16px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .theme-picker span { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .color-circle {
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      border: 2px solid #ffffff; transition: transform 0.2s ease;
+    }
+    .color-circle:hover { transform: scale(1.2); }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 24px; backdrop-filter: blur(8px); }
     .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
-    /* Brand Selection Cards with White Logo Background */
+    /* Brand Selection Cards */
     .brand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
     .brand-card {
-      background: #0f172a; border: 2px solid var(--border); border-radius: 12px;
+      background: rgba(15, 23, 42, 0.7); border: 2px solid var(--border); border-radius: 12px;
       padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
     }
     .brand-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
-    .brand-card.active { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+    .brand-card.active { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.15); }
     
     .logo-box {
       width: 80px; height: 80px; background-color: #ffffff; border-radius: 50%;
@@ -55,7 +84,7 @@
     .form-group { margin-bottom: 16px; }
     label { display: block; margin-bottom: 6px; font-size: 0.875rem; color: var(--text-muted); }
     select {
-      width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border);
+      width: 100%; padding: 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border);
       border-radius: 8px; color: var(--text-light); font-size: 1rem; outline: none;
     }
 
@@ -79,7 +108,7 @@
     /* Status Bar */
     .status-bar {
       display: flex; align-items: center; justify-content: space-between;
-      background: #0f172a; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.875rem;
+      background: rgba(15, 23, 42, 0.8); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.875rem;
     }
     .badge { padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
     .badge-disconnected { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
@@ -88,7 +117,7 @@
     /* DTC Diagnostic Results */
     .dtc-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
     .dtc-item {
-      background: #0f172a; border-left: 4px solid var(--accent-red); border-radius: 6px; padding: 16px;
+      background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent-red); border-radius: 6px; padding: 16px;
       display: flex; justify-content: space-between; align-items: flex-start;
     }
     .dtc-code { font-weight: 700; font-size: 1.1rem; color: var(--accent-red); }
@@ -103,19 +132,66 @@
       border-radius: 6px; border: 1px solid var(--border); height: 120px; overflow-y: auto; color: #38bdf8;
     }
 
-    /* PDF Print Container Styling */
+    /* PDF Report Template Styling */
     #pdfReportTemplate {
-      display: none; background: #ffffff; color: #1e293b; padding: 30px; font-family: Arial, sans-serif;
+      display: none; background: #ffffff; color: #0f172a; padding: 35px; font-family: Arial, sans-serif;
     }
     #pdfReportTemplate h2 { color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 16px; }
-    #pdfReportTemplate table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    #pdfReportTemplate th, #pdfReportTemplate td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 14px; }
-    #pdfReportTemplate th { background-color: #f1f5f9; }
+    
+    .pdf-fault-block {
+      margin-bottom: 16px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background-color: #f8fafc;
+    }
+    
+    /* Bold & Highlighted System Header */
+    .pdf-system-header {
+      font-weight: bold;
+      font-size: 15px;
+      background-color: #fef08a; /* Yellow Highlight */
+      color: #854d0e;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+
+    /* Normal Letter Problem Description */
+    .pdf-problem-text {
+      font-weight: normal;
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    /* Signature styling at bottom */
+    .pdf-signature {
+      font-size: 8px;
+      font-style: italic;
+      color: #475569;
+      margin-top: 40px;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 8px;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
+  <!-- Theme Color Switcher Option -->
+  <div class="theme-picker">
+    <span>Background Color:</span>
+    <div class="color-circle" style="background-color: #0f172a;" onclick="changeBackground('#0f172a')"></div>
+    <div class="color-circle" style="background-color: #0a192f;" onclick="changeBackground('#0a192f')"></div>
+    <div class="color-circle" style="background-color: #18181b;" onclick="changeBackground('#18181b')"></div>
+    <div class="color-circle" style="background-color: #1a090d;" onclick="changeBackground('#1a090d')"></div>
+    <div class="color-circle" style="background-color: #061a14;" onclick="changeBackground('#061a14')"></div>
+  </div>
+
   <header>
     <h1>🚗 Vehicle Diagnostic & Special Functions Tool</h1>
     <p>Read trouble codes, perform special module tests, clear faults, and export reports</p>
@@ -217,19 +293,24 @@
   </div>
 </div>
 
-<!-- Hidden PDF Output Container -->
+<!-- Hidden PDF Output Template -->
 <div id="pdfReportTemplate">
   <h2>AutoDiag - Vehicle Diagnostic Report</h2>
   <p><strong>Generated On:</strong> <span id="pdf-date"></span></p>
   <p><strong>Vehicle:</strong> <span id="pdf-vehicle"></span></p>
-  <p><strong>Connection Type:</strong> OBD-II Bluetooth Adapter</p>
+  <p><strong>Connection Status:</strong> Active OBD-II ECU Scan</p>
   <hr style="margin: 15px 0; border: 0; border-top: 1px solid #cbd5e1;"/>
   
-  <h3>Diagnostic Trouble Codes (DTCs)</h3>
-  <div id="pdf-dtc-table"></div>
+  <h3>Diagnostic Faults & Subsystem Results</h3>
+  <div id="pdf-faults-container" style="margin-top: 15px;"></div>
   
   <h3 style="margin-top: 20px;">Special Function Log</h3>
-  <p id="pdf-special-log">No special function routines performed during this session.</p>
+  <p id="pdf-special-log" style="font-size: 13px; color: #475569;">No special function routines performed during this session.</p>
+
+  <!-- Signature at the bottom in size 8 -->
+  <div class="pdf-signature">
+    Signature: Amir
+  </div>
 </div>
 
 <script>
@@ -249,13 +330,12 @@
     ]
   };
 
-  // DTC Sample Database
+  // DTC Sample Database with Fault System categories
   const dtcDatabase = {
-    P0300: { desc: "Random/Multiple Cylinder Misfire Detected", sys: "Engine / Powertrain" },
-    P0135: { desc: "O2 Sensor Heater Circuit (Bank 1 Sensor 1)", sys: "Emissions Control" },
-    P0420: { desc: "Catalyst System Efficiency Below Threshold (Bank 1)", sys: "Exhaust System" },
-    P0102: { desc: "Mass or Volume Air Flow Circuit Low Input", sys: "Air Intake System" },
-    P0113: { desc: "Intake Air Temperature Sensor 1 Circuit High", sys: "Engine Sensor" }
+    C0051: { desc: "Steering Angle Sensor (SAS) Position Signal Circuit Error / Faulty Calibration", sys: "Steering Fault System" },
+    P0300: { desc: "Random/Multiple Cylinder Misfire Detected in Powertrain System", sys: "Engine / Powertrain System" },
+    P0135: { desc: "O2 Sensor Heater Circuit Dysfunction (Bank 1 Sensor 1)", sys: "Emissions Control System" },
+    P0420: { desc: "Catalyst System Efficiency Below Threshold (Bank 1)", sys: "Exhaust System" }
   };
 
   let currentBrand = null;
@@ -264,6 +344,12 @@
   let gattServer = null;
   let activeDtcList = [];
   let lastSpecialFunctionRun = "";
+
+  // Function to change background dynamically between 5 colors
+  function changeBackground(colorHex) {
+    document.documentElement.style.setProperty('--bg-dark', colorHex);
+    log(`Background theme changed.`);
+  }
 
   // Populate Year Dropdown (1996 - 2026)
   function initYearSelect() {
@@ -314,24 +400,23 @@
       const gain = audioCtx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1000, audioCtx.currentTime); // Crisp 1000Hz beep sound
+      osc.frequency.setValueAtTime(1000, audioCtx.currentTime); // 1000Hz beep tone
       gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
       
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
       osc.start();
-      // Stop after 250 milliseconds (1 single beep)
       setTimeout(() => { 
         osc.stop(); 
         audioCtx.close(); 
-      }, 250);
+      }, 250); // Single 250ms beep
     } catch (e) {
-      console.log("Audio not supported or restricted", e);
+      console.log("Audio play prevented", e);
     }
   }
 
-  // Connect via Web Bluetooth (ELM327 Adapter)
+  // Connect via Web Bluetooth
   async function connectOBD() {
     if (!navigator.bluetooth) {
       alert("Web Bluetooth is not supported on this browser. Use Chrome or Edge.");
@@ -390,13 +475,13 @@
     const funcSelect = document.getElementById('specialFuncSelect');
     const selectedText = funcSelect.options[funcSelect.selectedIndex].text;
     
-    log(`Initiating Special Function Routine: [${selectedText}]...`);
+    log(`Initiating Routine: [${selectedText}]...`);
     
     setTimeout(() => {
       playSingleBeep();
       lastSpecialFunctionRun = selectedText + " - Completed Successfully";
       log(`SUCCESS: ${selectedText} routine finished.`);
-      alert(`Special Function Completed:\n${selectedText}`);
+      alert(`Special Function Executed:\n${selectedText}`);
     }, 1800);
   }
 
@@ -410,11 +495,11 @@
       return;
     }
 
-    log(`Executing Full OBD-II Scan for ${currentBrand.toUpperCase()} ${model} (${year})...`);
+    log(`Executing Full Scan for ${currentBrand.toUpperCase()} ${model} (${year})...`);
     document.getElementById('resultsArea').innerHTML = `<p style="text-align:center; color: var(--accent-blue);">Scanning ECU & Control Modules, please wait...</p>`;
 
     setTimeout(() => {
-      activeDtcList = ["P0300", "P0135", "P0420"];
+      activeDtcList = ["C0051", "P0300", "P0135", "P0420"];
       renderDTCResults();
       document.getElementById('resetBtn').disabled = false;
       document.getElementById('pdfBtn').disabled = false;
@@ -432,13 +517,12 @@
 
     let html = `<div class="dtc-list">`;
     activeDtcList.forEach(code => {
-      const info = dtcDatabase[code] || { desc: "Unknown Diagnostic Trouble Code", sys: "General System" };
+      const info = dtcDatabase[code] || { desc: "Unknown Fault Code", sys: "General Fault System" };
       html += `
         <div class="dtc-item">
           <div>
-            <div class="dtc-code">${code}</div>
+            <div class="dtc-code">${code} - ${info.sys}</div>
             <div class="dtc-desc">${info.desc}</div>
-            <div class="dtc-sub">Category: ${info.sys}</div>
           </div>
         </div>
       `;
@@ -458,7 +542,7 @@
         activeDtcList = [];
         renderDTCResults();
         
-        // One-time single beep
+        // Single beep confirmation
         playSingleBeep();
         
         log("DTCs successfully erased. ECU reset complete!");
@@ -480,19 +564,25 @@
     document.getElementById('pdf-date').innerText = new Date().toLocaleString();
     document.getElementById('pdf-vehicle').innerText = `${currentBrand.toUpperCase()} ${model} (${year})`;
     
-    // Fill DTC table
-    let dtcHtml = "";
+    // Fill PDF Faults Container
+    const pdfContainer = document.getElementById('pdf-faults-container');
     if (activeDtcList.length === 0) {
-      dtcHtml = "<p><strong>No DTCs / Fault codes detected. System normal.</strong></p>";
+      pdfContainer.innerHTML = "<p class='pdf-problem-text'><strong>No DTCs / Fault codes detected. All systems normal.</strong></p>";
     } else {
-      dtcHtml = "<table><tr><th>DTC Code</th><th>Description</th><th>System</th></tr>";
+      let faultBlocks = "";
       activeDtcList.forEach(code => {
-        const info = dtcDatabase[code] || { desc: "Unknown Code", sys: "General" };
-        dtcHtml += `<tr><td><strong>${code}</strong></td><td>${info.desc}</td><td>${info.sys}</td></tr>`;
+        const info = dtcDatabase[code] || { desc: "Unknown Problem", sys: "General System Fault" };
+        faultBlocks += `
+          <div class="pdf-fault-block">
+            <!-- Header in BOLD and HIGHLIGHTED -->
+            <div class="pdf-system-header">[${code}] ${info.sys}</div>
+            <!-- Problem in NORMAL letter -->
+            <div class="pdf-problem-text">${info.desc}</div>
+          </div>
+        `;
       });
-      dtcHtml += "</table>";
+      pdfContainer.innerHTML = faultBlocks;
     }
-    document.getElementById('pdf-dtc-table').innerHTML = dtcHtml;
 
     if (lastSpecialFunctionRun) {
       document.getElementById('pdf-special-log').innerText = lastSpecialFunctionRun;

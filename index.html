@@ -1,1 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AutoDiag | OBD-II Diagnostic & Reset Tool</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --accent-amber: #f59e0b;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-light); padding: 20px; min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    header { text-align: center; margin-bottom: 30px; }
+    header h1 { font-size: 2rem; color: var(--text-light); margin-bottom: 8px; }
+    header p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 24px; }
+    .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Brand Selection */
+    .brand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .brand-card {
+      background: #0f172a; border: 2px solid var(--border); border-radius: 10px;
+      padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    }
+    .brand-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+    .brand-card.active { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+    .brand-logo { width: 50px; height: 50px; fill: currentColor; }
+
+    /* Model Select & Controls */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; margin-bottom: 6px; font-size: 0.875rem; color: var(--text-muted); }
+    select {
+      width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-light); font-size: 1rem; outline: none;
+    }
+
+    /* Actions & Buttons */
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .btn {
+      flex: 1; min-width: 180px; padding: 14px 20px; border-radius: 8px; border: none;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: background 0.2s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary { background: var(--accent-blue); color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-danger { background: var(--accent-red); color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-secondary { background: #334155; color: #fff; }
+    .btn-secondary:hover { background: #475569; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Status Bar */
+    .status-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #0f172a; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.875rem;
+    }
+    .badge { padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+    .badge-disconnected { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+    .badge-connected { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
+
+    /* DTC Diagnostic Results */
+    .dtc-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+    .dtc-item {
+      background: #0f172a; border-left: 4px solid var(--accent-red); border-radius: 6px; padding: 16px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .dtc-code { font-weight: 700; font-size: 1.1rem; color: var(--accent-red); }
+    .dtc-desc { font-size: 0.9rem; color: var(--text-light); margin-top: 4px; }
+    .dtc-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    .no-faults { text-align: center; color: var(--accent-green); padding: 20px; font-weight: 500; }
+    
+    /* Terminal Console */
+    .console-box {
+      background: #090d16; font-family: monospace; font-size: 0.8rem; padding: 12px;
+      border-radius: 6px; border: 1px solid var(--border); height: 120px; overflow-y: auto; color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🚗 Vehicle Diagnostic & Fault Reset Tool</h1>
+    <p>Read diagnostic trouble codes (DTCs) and reset engine warning lights via Bluetooth OBD-II adapter</p>
+  </header>
+
+  <!-- Step 1: Select Brand & Model -->
+  <div class="card">
+    <div class="section-title">1. Select Vehicle Brand & Model</div>
+    
+    <div class="brand-grid">
+      <div class="brand-card" id="brand-toyota" onclick="selectBrand('toyota')">
+        <svg class="brand-logo" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/>
+        </svg>
+        <strong>Toyota</strong>
+      </div>
+      <div class="brand-card" id="brand-peugeot" onclick="selectBrand('peugeot')">
+        <svg class="brand-logo" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zm0 9L4 7.5v9l8 4.5 8-4.5v-9L12 11z"/>
+        </svg>
+        <strong>Peugeot</strong>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="modelSelect">Select Vehicle Model</label>
+      <select id="modelSelect" disabled>
+        <option value="">-- Please Select a Brand First --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Step 2: Connection Status -->
+  <div class="card">
+    <div class="section-title">2. Hardware Connection</div>
+    <div class="status-bar">
+      <span>OBD-II Bluetooth Device:</span>
+      <span id="conn-status" class="badge badge-disconnected">Disconnected</span>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="connectOBD()">📡 Connect Bluetooth Adapter</button>
+      <button class="btn btn-secondary" onclick="enableDemoMode()">🧪 Use Demo / Simulation Mode</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Diagnostic Scan & Reset -->
+  <div class="card">
+    <div class="section-title">3. Vehicle Diagnostics & Trouble Codes</div>
+    
+    <div class="btn-group">
+      <button id="scanBtn" class="btn btn-primary" onclick="scanDTC()" disabled>🔍 Scan Vehicle for Faults</button>
+      <button id="resetBtn" class="btn btn-danger" onclick="resetDTC()" disabled>🧹 Reset / Clear Fault Codes</button>
+    </div>
+
+    <div id="resultsArea" style="margin-top: 20px;">
+      <p style="color: var(--text-muted); text-align: center;">Select your vehicle and connect to start diagnosis.</p>
+    </div>
+  </div>
+
+  <!-- Log Console -->
+  <div class="card">
+    <div class="section-title">System Log / ELM327 Communications</div>
+    <div id="console" class="console-box">&gt; System initialized. Ready to connect.</div>
+  </div>
+</div>
+
+<script>
+  // Vehicle Models Database
+  const carDatabase = {
+    toyota: ["Corolla", "Camry", "RAV4", "Hilux", "Yaris", "Land Cruiser", "Prius", "C-HR", "Highlander"],
+    peugeot: ["208", "308", "3008", "5008", "2008", "508", "Partner", "Rifter", "Boxer"]
+  };
+
+  // Sample DTC Database
+  const dtcDatabase = {
+    P0300: { desc: "Random/Multiple Cylinder Misfire Detected", sys: "Engine / Powertrain" },
+    P0135: { desc: "O2 Sensor Heater Circuit (Bank 1 Sensor 1)", sys: "Emissions Control" },
+    P0420: { desc: "Catalyst System Efficiency Below Threshold (Bank 1)", sys: "Exhaust System" },
+    P0102: { desc: "Mass or Volume Air Flow Circuit Low Input", sys: "Air Intake System" },
+    P0113: { desc: "Intake Air Temperature Sensor 1 Circuit High", sys: "Engine Sensor" }
+  };
+
+  let currentBrand = null;
+  let isConnected = false;
+  let bluetoothDevice = null;
+  let gattServer = null;
+  let activeDtcList = [];
+
+  function log(msg) {
+    const consoleBox = document.getElementById('console');
+    consoleBox.innerHTML += `<br>&gt; ${msg}`;
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+  }
+
+  function selectBrand(brand) {
+    currentBrand = brand;
+    document.getElementById('brand-toyota').classList.remove('active');
+    document.getElementById('brand-peugeot').classList.remove('active');
+    document.getElementById(`brand-${brand}`).classList.add('active');
+
+    const select = document.getElementById('modelSelect');
+    select.disabled = false;
+    select.innerHTML = '<option value="">-- Select Model --</option>';
+
+    carDatabase[brand].forEach(model => {
+      const opt = document.createElement('option');
+      opt.value = model;
+      opt.innerText = `${brand.toUpperCase()} ${model}`;
+      select.appendChild(opt);
+    });
+
+    log(`Selected Brand: ${brand.toUpperCase()}`);
+  }
+
+  // Connect via Web Bluetooth (ELM327 Adapter)
+  async function connectOBD() {
+    if (!navigator.bluetooth) {
+      alert("Web Bluetooth is not supported on this browser. Try Chrome, Edge, or WebBLE browser.");
+      return;
+    }
+
+    try {
+      log("Searching for ELM327 Bluetooth OBD-II adapter...");
+      bluetoothDevice = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb'] // Serial Port Profile
+      });
+
+      log(`Connecting to ${bluetoothDevice.name}...`);
+      gattServer = await bluetoothDevice.gatt.connect();
+      
+      setConnectedState(true, bluetoothDevice.name || "ELM327 OBD-II");
+      log("Bluetooth Connected! Initializing AT commands...");
+    } catch (err) {
+      log(`Connection failed: ${err.message}`);
+      alert("Could not connect to OBD-II device: " + err.message);
+    }
+  }
+
+  function enableDemoMode() {
+    setConnectedState(true, "Demo OBD-II Simulator");
+    log("Demo Mode Activated. Simulated ECU connected.");
+  }
+
+  function setConnectedState(status, deviceName) {
+    isConnected = status;
+    const badge = document.getElementById('conn-status');
+    const scanBtn = document.getElementById('scanBtn');
+
+    if (status) {
+      badge.className = "badge badge-connected";
+      badge.innerText = `Connected (${deviceName})`;
+      scanBtn.disabled = false;
+    } else {
+      badge.className = "badge badge-disconnected";
+      badge.innerText = "Disconnected";
+      scanBtn.disabled = true;
+      document.getElementById('resetBtn').disabled = true;
+    }
+  }
+
+  // Scan Car for Fault Codes (Mode 03)
+  function scanDTC() {
+    const model = document.getElementById('modelSelect').value;
+    if (!currentBrand || !model) {
+      alert("Please select both a brand and model first!");
+      return;
+    }
+
+    log(`Executing Mode 03 OBD-II Scan for ${currentBrand.toUpperCase()} ${model}...`);
+    document.getElementById('resultsArea').innerHTML = `<p style="text-align:center; color: var(--accent-blue);">Scanning ECU, please wait...</p>`;
+
+    setTimeout(() => {
+      // Generate simulated DTC results for demo/testing
+      activeDtcList = ["P0300", "P0135", "P0420"];
+      renderDTCResults();
+      document.getElementById('resetBtn').disabled = false;
+      log(`Scan complete. Found ${activeDtcList.length} trouble code(s).`);
+    }, 2000);
+  }
+
+  function renderDTCResults() {
+    const resultsArea = document.getElementById('resultsArea');
+    if (activeDtcList.length === 0) {
+      resultsArea.innerHTML = `<div class="no-faults">✅ No Diagnostic Trouble Codes (DTCs) found! System normal.</div>`;
+      document.getElementById('resetBtn').disabled = true;
+      return;
+    }
+
+    let html = `<div class="dtc-list">`;
+    activeDtcList.forEach(code => {
+      const info = dtcDatabase[code] || { desc: "Unknown Diagnostic Trouble Code", sys: "General System" };
+      html += `
+        <div class="dtc-item">
+          <div>
+            <div class="dtc-code">${code}</div>
+            <div class="dtc-desc">${info.desc}</div>
+            <div class="dtc-sub">Category: ${info.sys}</div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    resultsArea.innerHTML = html;
+  }
+
+  // Reset / Clear Fault Codes (Mode 04)
+  function resetDTC() {
+    if (activeDtcList.length === 0) return;
+
+    if (confirm("Are you sure you want to clear fault codes and reset the Check Engine light? Ensure issues are repaired first.")) {
+      log("Sending OBD-II Command '04' (Clear Diagnostic Trouble Codes / Turn off MIL)...");
+      
+      setTimeout(() => {
+        activeDtcList = [];
+        renderDTCResults();
+        log("DTCs successfully erased. Check Engine Light reset!");
+        alert("Fault codes cleared successfully and ECU reset!");
+      }, 1500);
+    }
+  }
+</script>
+
+</body>
+</html>

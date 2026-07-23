@@ -122,7 +122,6 @@
     }
     .dtc-code { font-weight: 700; font-size: 1.1rem; color: var(--accent-red); }
     .dtc-desc { font-size: 0.9rem; color: var(--text-light); margin-top: 4px; }
-    .dtc-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
 
     .no-faults { text-align: center; color: var(--accent-green); padding: 20px; font-weight: 500; }
     
@@ -132,16 +131,23 @@
       border-radius: 6px; border: 1px solid var(--border); height: 120px; overflow-y: auto; color: #38bdf8;
     }
 
-    /* PDF Report Template Styling */
+    /* Off-screen PDF Template Container (Fixes Blank PDF issue) */
     #pdfReportTemplate {
-      display: none; background: #ffffff; color: #0f172a; padding: 35px; font-family: Arial, sans-serif;
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 700px;
+      background: #ffffff;
+      color: #0f172a;
+      padding: 35px;
+      font-family: Arial, sans-serif;
     }
     #pdfReportTemplate h2 { color: #0f172a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 16px; }
     
     .pdf-fault-block {
       margin-bottom: 16px;
       padding: 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
       background-color: #f8fafc;
     }
@@ -149,7 +155,7 @@
     /* Bold & Highlighted System Header */
     .pdf-system-header {
       font-weight: bold;
-      font-size: 15px;
+      font-size: 14px;
       background-color: #fef08a; /* Yellow Highlight */
       color: #854d0e;
       padding: 4px 8px;
@@ -167,7 +173,7 @@
       margin-top: 4px;
     }
 
-    /* Signature styling at bottom */
+    /* Signature styling at bottom (size 8px) */
     .pdf-signature {
       font-size: 8px;
       font-style: italic;
@@ -293,7 +299,7 @@
   </div>
 </div>
 
-<!-- Hidden PDF Output Template -->
+<!-- Rendered Off-Screen PDF Template -->
 <div id="pdfReportTemplate">
   <h2>AutoDiag - Vehicle Diagnostic Report</h2>
   <p><strong>Generated On:</strong> <span id="pdf-date"></span></p>
@@ -301,10 +307,10 @@
   <p><strong>Connection Status:</strong> Active OBD-II ECU Scan</p>
   <hr style="margin: 15px 0; border: 0; border-top: 1px solid #cbd5e1;"/>
   
-  <h3>Diagnostic Faults & Subsystem Results</h3>
-  <div id="pdf-faults-container" style="margin-top: 15px;"></div>
+  <h3 style="margin-bottom: 10px;">Diagnostic Faults & Subsystem Results</h3>
+  <div id="pdf-faults-container"></div>
   
-  <h3 style="margin-top: 20px;">Special Function Log</h3>
+  <h3 style="margin-top: 20px; margin-bottom: 6px;">Special Function Log</h3>
   <p id="pdf-special-log" style="font-size: 13px; color: #475569;">No special function routines performed during this session.</p>
 
   <!-- Signature at the bottom in size 8 -->
@@ -330,7 +336,7 @@
     ]
   };
 
-  // DTC Sample Database with Fault System categories
+  // DTC Sample Database
   const dtcDatabase = {
     C0051: { desc: "Steering Angle Sensor (SAS) Position Signal Circuit Error / Faulty Calibration", sys: "Steering Fault System" },
     P0300: { desc: "Random/Multiple Cylinder Misfire Detected in Powertrain System", sys: "Engine / Powertrain System" },
@@ -485,7 +491,7 @@
     }, 1800);
   }
 
-  // Scan Car for Fault Codes (Mode 03)
+  // Scan Car for Fault Codes
   function scanDTC() {
     const model = document.getElementById('modelSelect').value;
     const year = document.getElementById('yearSelect').value;
@@ -531,7 +537,7 @@
     resultsArea.innerHTML = html;
   }
 
-  // Reset / Clear Fault Codes (Mode 04)
+  // Reset / Clear Fault Codes
   function resetDTC() {
     if (activeDtcList.length === 0) return;
 
@@ -589,18 +595,16 @@
     }
 
     const template = document.getElementById('pdfReportTemplate');
-    template.style.display = "block";
 
     const opt = {
       margin:       10,
       filename:     `Diagnostic_Report_${currentBrand}_${model}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
+      html2canvas:  { scale: 2, logging: false, useCORS: true },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     html2pdf().set(opt).from(template).save().then(() => {
-      template.style.display = "none";
       log("Diagnostic Report PDF generated and downloaded.");
     });
   }

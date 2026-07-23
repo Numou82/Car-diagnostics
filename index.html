@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AutoDiag | OBD-II Diagnostic & Reset Tool</title>
+  <title>AutoDiag GCC | Toyota & Peugeot Diagnostics</title>
   <style>
     :root {
       --bg-dark: #0f172a;
@@ -11,7 +11,6 @@
       --accent-red: #ef4444;
       --accent-blue: #3b82f6;
       --accent-green: #22c55e;
-      --accent-amber: #f59e0b;
       --text-light: #f8fafc;
       --text-muted: #94a3b8;
       --border: #334155;
@@ -28,18 +27,34 @@
     .card { background: var(--card-bg); border-radius: 12px; padding: 24px; border: 1px solid var(--border); margin-bottom: 24px; }
     .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
-    /* Brand Selection */
+    /* Brand Selection Cards with White Logo Background */
     .brand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
     .brand-card {
-      background: #0f172a; border: 2px solid var(--border); border-radius: 10px;
+      background: #0f172a; border: 2px solid var(--border); border-radius: 12px;
       padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
     }
     .brand-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
     .brand-card.active { border-color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
-    .brand-logo { width: 50px; height: 50px; fill: currentColor; }
+    
+    /* Logo Container with White Background */
+    .logo-box {
+      width: 90px;
+      height: 90px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    .brand-logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    /* Model Select & Controls */
+    /* Form Inputs & Selectors */
+    .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+    
     .form-group { margin-bottom: 16px; }
     label { display: block; margin-bottom: 6px; font-size: 0.875rem; color: var(--text-muted); }
     select {
@@ -98,30 +113,49 @@
     <p>Read diagnostic trouble codes (DTCs) and reset engine warning lights via Bluetooth OBD-II adapter</p>
   </header>
 
-  <!-- Step 1: Select Brand & Model -->
+  <!-- Step 1: Select Brand, Model & Year -->
   <div class="card">
-    <div class="section-title">1. Select Vehicle Brand & Model</div>
+    <div class="section-title">1. Select Vehicle Brand, Model & Production Year</div>
     
     <div class="brand-grid">
+      <!-- Toyota Selection Card -->
       <div class="brand-card" id="brand-toyota" onclick="selectBrand('toyota')">
-        <svg class="brand-logo" viewBox="0 0 24 24">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/>
-        </svg>
+        <div class="logo-box">
+          <svg class="brand-logo-img" viewBox="0 0 100 70">
+            <ellipse cx="50" cy="35" rx="45" ry="30" fill="none" stroke="#eb0a1e" stroke-width="6"/>
+            <ellipse cx="50" cy="35" rx="35" ry="14" fill="none" stroke="#eb0a1e" stroke-width="6"/>
+            <ellipse cx="50" cy="35" rx="14" ry="26" fill="none" stroke="#eb0a1e" stroke-width="6"/>
+          </svg>
+        </div>
         <strong>Toyota</strong>
       </div>
+
+      <!-- Peugeot Selection Card -->
       <div class="brand-card" id="brand-peugeot" onclick="selectBrand('peugeot')">
-        <svg class="brand-logo" viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zm0 9L4 7.5v9l8 4.5 8-4.5v-9L12 11z"/>
-        </svg>
+        <div class="logo-box">
+          <svg class="brand-logo-img" viewBox="0 0 100 100">
+            <path d="M20 10 L80 10 L75 85 L50 95 L25 85 Z" fill="#002454"/>
+            <path d="M45 25 C55 25, 65 30, 65 40 C65 50, 55 55, 45 55 L45 75 L35 75 L35 25 Z M45 35 L45 45 C50 45, 55 43, 55 40 C55 37, 50 35, 45 35 Z" fill="#ffffff"/>
+          </svg>
+        </div>
         <strong>Peugeot</strong>
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="modelSelect">Select Vehicle Model</label>
-      <select id="modelSelect" disabled>
-        <option value="">-- Please Select a Brand First --</option>
-      </select>
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="modelSelect">Vehicle Model</label>
+        <select id="modelSelect" disabled>
+          <option value="">-- Please Select a Brand First --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="yearSelect">Model Year</label>
+        <select id="yearSelect" disabled>
+          <option value="">-- Year --</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -149,7 +183,7 @@
     </div>
 
     <div id="resultsArea" style="margin-top: 20px;">
-      <p style="color: var(--text-muted); text-align: center;">Select your vehicle and connect to start diagnosis.</p>
+      <p style="color: var(--text-muted); text-align: center;">Select your vehicle brand, model, and year to start diagnosis.</p>
     </div>
   </div>
 
@@ -161,13 +195,23 @@
 </div>
 
 <script>
-  // Vehicle Models Database
+  // Expanded Database including popular GCC models
   const carDatabase = {
-    toyota: ["Corolla", "Camry", "RAV4", "Hilux", "Yaris", "Land Cruiser", "Prius", "C-HR", "Highlander"],
-    peugeot: ["208", "308", "3008", "5008", "2008", "508", "Partner", "Rifter", "Boxer"]
+    toyota: [
+      "Land Cruiser 300", "Land Cruiser 200", "Land Cruiser 70 Hardtop/Pickup",
+      "Land Cruiser Prado", "Fortuner", "Hilux", "FJ Cruiser", "Camry", "Corolla", 
+      "Avalon", "RAV4", "Highlander", "Yaris", "Supra", "Crown", "Raize", 
+      "Rush", "Sequoia", "Tacoma", "Tundra", "Sienna", "Innova", "HiAce", "Coaster", 
+      "Veloz", "Urban Cruiser", "Granvia", "bZ4X", "Cressida"
+    ],
+    peugeot: [
+      "208", "308", "408", "508", "2008", "3008", "5008", "Landtrek", 
+      "301", "Partner", "Expert", "Boxer", "Rifter", "Traveller", "RCZ", 
+      "206", "207", "407"
+    ]
   };
 
-  // Sample DTC Database
+  // DTC Sample Database
   const dtcDatabase = {
     P0300: { desc: "Random/Multiple Cylinder Misfire Detected", sys: "Engine / Powertrain" },
     P0135: { desc: "O2 Sensor Heater Circuit (Bank 1 Sensor 1)", sys: "Emissions Control" },
@@ -182,6 +226,18 @@
   let gattServer = null;
   let activeDtcList = [];
 
+  // Populate Year Dropdown (1996 - 2026)
+  function initYearSelect() {
+    const yearSelect = document.getElementById('yearSelect');
+    for (let yr = 2026; yr >= 1996; yr--) {
+      const opt = document.createElement('option');
+      opt.value = yr;
+      opt.innerText = yr;
+      yearSelect.appendChild(opt);
+    }
+  }
+  initYearSelect();
+
   function log(msg) {
     const consoleBox = document.getElementById('console');
     consoleBox.innerHTML += `<br>&gt; ${msg}`;
@@ -194,24 +250,50 @@
     document.getElementById('brand-peugeot').classList.remove('active');
     document.getElementById(`brand-${brand}`).classList.add('active');
 
-    const select = document.getElementById('modelSelect');
-    select.disabled = false;
-    select.innerHTML = '<option value="">-- Select Model --</option>';
+    const modelSelect = document.getElementById('modelSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    
+    modelSelect.disabled = false;
+    yearSelect.disabled = false;
+    modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
 
     carDatabase[brand].forEach(model => {
       const opt = document.createElement('option');
       opt.value = model;
       opt.innerText = `${brand.toUpperCase()} ${model}`;
-      select.appendChild(opt);
+      modelSelect.appendChild(opt);
     });
 
     log(`Selected Brand: ${brand.toUpperCase()}`);
   }
 
+  // Audio Beep Sound Notification using Web Audio API
+  function playCompletionBeep() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch A5 beep
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      // Two short beeps for confirmation
+      setTimeout(() => { osc.frequency.setValueAtTime(1174.66, audioCtx.currentTime); }, 150); // D6
+      setTimeout(() => { osc.stop(); audioCtx.close(); }, 350);
+    } catch (e) {
+      console.log("Audio not supported or restricted", e);
+    }
+  }
+
   // Connect via Web Bluetooth (ELM327 Adapter)
   async function connectOBD() {
     if (!navigator.bluetooth) {
-      alert("Web Bluetooth is not supported on this browser. Try Chrome, Edge, or WebBLE browser.");
+      alert("Web Bluetooth is not supported on this browser. Use Chrome or Edge.");
       return;
     }
 
@@ -258,12 +340,14 @@
   // Scan Car for Fault Codes (Mode 03)
   function scanDTC() {
     const model = document.getElementById('modelSelect').value;
-    if (!currentBrand || !model) {
-      alert("Please select both a brand and model first!");
+    const year = document.getElementById('yearSelect').value;
+
+    if (!currentBrand || !model || !year) {
+      alert("Please select vehicle brand, model, and year first!");
       return;
     }
 
-    log(`Executing Mode 03 OBD-II Scan for ${currentBrand.toUpperCase()} ${model}...`);
+    log(`Executing Mode 03 OBD-II Scan for ${currentBrand.toUpperCase()} ${model} (${year})...`);
     document.getElementById('resultsArea').innerHTML = `<p style="text-align:center; color: var(--accent-blue);">Scanning ECU, please wait...</p>`;
 
     setTimeout(() => {
@@ -277,7 +361,7 @@
   function renderDTCResults() {
     const resultsArea = document.getElementById('resultsArea');
     if (activeDtcList.length === 0) {
-      resultsArea.innerHTML = `<div class="no-faults">✅ No Diagnostic Trouble Codes (DTCs) found! System normal.</div>`;
+      resultsArea.innerHTML = `<div class="no-faults">✅ No Diagnostic Trouble Codes (DTCs) found! Vehicle normal.</div>`;
       document.getElementById('resetBtn').disabled = true;
       return;
     }
@@ -303,14 +387,18 @@
   function resetDTC() {
     if (activeDtcList.length === 0) return;
 
-    if (confirm("Are you sure you want to clear fault codes and reset the Check Engine light? Ensure issues are repaired first.")) {
-      log("Sending OBD-II Command '04' (Clear Diagnostic Trouble Codes / Turn off MIL)...");
+    if (confirm("Are you sure you want to clear fault codes and reset the Check Engine light?")) {
+      log("Sending OBD-II Command '04' (Clear DTCs / Reset MIL Light)...");
       
       setTimeout(() => {
         activeDtcList = [];
         renderDTCResults();
+        
+        // Play success audio beep
+        playCompletionBeep();
+        
         log("DTCs successfully erased. Check Engine Light reset!");
-        alert("Fault codes cleared successfully and ECU reset!");
+        alert("Reset Complete! Fault codes cleared successfully.");
       }, 1500);
     }
   }

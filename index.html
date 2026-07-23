@@ -219,7 +219,7 @@
       log("Searching for ELM327 Bluetooth OBD-II adapter...");
       bluetoothDevice = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb'] // Serial Port Profile
+        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
       });
 
       log(`Connecting to ${bluetoothDevice.name}...`);
@@ -267,7 +267,6 @@
     document.getElementById('resultsArea').innerHTML = `<p style="text-align:center; color: var(--accent-blue);">Scanning ECU, please wait...</p>`;
 
     setTimeout(() => {
-      // Generate simulated DTC results for demo/testing
       activeDtcList = ["P0300", "P0135", "P0420"];
       renderDTCResults();
       document.getElementById('resetBtn').disabled = false;
